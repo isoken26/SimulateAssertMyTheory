@@ -1,0 +1,67 @@
+#!/usr/bin/env node
+
+"use strict";
+
+/**
+ * 資金、期間、勝率から資産をシミュレーションする
+ * @param funds 資金
+ * @param days 期間（日数）
+ * @param probability 勝率
+ */
+function assertCalculation(funds, days, probability) {
+    
+    //資産
+    let assert = 0;
+    //銀行口座残高
+    let bankAccountBalance = 0;
+    //証券口座残高
+    let securitiesAccountBalance = funds;
+
+    for (let i = 1; i <= days; i++) { 
+        //銀行口座に戻す資産
+        let refundAssert = (securitiesAccountBalance * 1.1 - securitiesAccountBalance) * 0.1;
+        let random = Math.random();
+
+        if (random < probability) { 
+            securitiesAccountBalance *= 1.03;
+        } else { 
+            securitiesAccountBalance *= 0.97;
+        }        
+        
+        securitiesAccountBalance -= refundAssert;
+        bankAccountBalance += refundAssert;
+        assert = securitiesAccountBalance + bankAccountBalance;
+    }
+    
+    //小数点を切り捨てる
+    securitiesAccountBalance = Math.floor(securitiesAccountBalance);
+    bankAccountBalance = Math.floor(bankAccountBalance);
+    assert = Math.floor(assert);
+
+    return { "assert": assert, "securitiesAccountBalance": securitiesAccountBalance, "bankAccountBalance": bankAccountBalance};
+}
+
+//実行するたびにコンソールをクリアする
+console.clear();
+
+const funds = 1000000;
+const days = 365;
+const probability = 0.51;
+const exeCount = 10000;
+//勝った回数
+let wonCount = 0;
+
+for (let i = 1; i <= exeCount; i++) { 
+    let result = assertCalculation(funds, days, probability);
+
+    if (result.assert > funds) {
+        console.log("勝った");
+        wonCount++;
+    } else { 
+        console.log("負けた");
+    }
+
+    console.log("証券口座残高：" + result.securitiesAccountBalance, "銀行口座残高：" + result.bankAccountBalance, "資産：" + result.assert);
+}
+
+console.log("勝率" + wonCount / exeCount * 100 + "%");
